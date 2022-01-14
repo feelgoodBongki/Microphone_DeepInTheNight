@@ -53,7 +53,6 @@ public class MicrophoneListner : MonoBehaviour
 
     void Start()
     {
-
         if (startMicOnStartUp)
         {
             RestartMicrophoneListener();

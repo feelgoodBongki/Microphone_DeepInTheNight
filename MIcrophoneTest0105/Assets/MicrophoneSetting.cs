@@ -33,47 +33,68 @@ public class MicrophoneSetting : MonoBehaviour
     }
     void Update()
     {
-        
-        //Debug.Log("Loudness : " + loudness);
+        Debug.Log(RecTime);
+
+        loudness = GetAveragedVolume() * sensitivity;
         //사운드 측정
         SecondWay2();
-        //SecondWay2();
+        Debug.Log("Loudness : " + (int)loudness);
+        Debug.Log(voiceIn);
     }
-
-
-
-
-    void ThirdWay_Two()
+    void SecondWay2()
     {
-        //Capturing the current clip data
-        AudioClip recordedClip = _audio.clip;
-        var position = Microphone.GetPosition(Microphone.devices[0]);
-        var soundData = new float[recordedClip.samples * recordedClip.channels];
-        recordedClip.GetData(soundData, 0);
-        //Create shortened array for the data that was used for recording
-        var newData = new float[position * recordedClip.channels];
-
-        //Microphone.End(null)
-        for (int i = 0; i < newData.Length; i++)
+        //목소리 입력 시작
+        if (rec)
         {
-            newData[i] = soundData[i];
+            //사운드 측정
+            if (loudness > 1)
+            {
+                voiceIn = true;
+            }
+            else if (loudness < 1)
+            {
+                voiceIn = false;
+                saved = true;
+                
+            }
+            //if (loudness < 1)
+            //{
+            //    voiceIn = false;
+            //    //saved = true;
+            //}
+            //else if (loudness > 1)
+            //{
+            //    voiceIn = true;
+            //}
+
+            //소리1이상
+            if (voiceIn)
+            {
+                StartCoroutine(VoiceRec());
+                //RecTime = 2;
+            }
+            //소리 1이하
+            else if (saved && voiceIn == false)
+            {
+                RecTime -= Time.deltaTime;
+                ThirdWay(_audio, Microphone.devices[0].ToString());
+                if (RecTime < 0)
+                {
+                   
+                    voiceIn = true;
+                    rec = false;
+                }
+            }
         }
-
-        //One does not simply shorten an AudioClip,
-        //so we make a new one with the appropriate length
-        var newClip = AudioClip.Create(recordedClip.name, position, recordedClip.channels, recordedClip.frequency, false);
-        newClip.SetData(newData, 0);//Give it the data from the old clip
-
-        //Replace the old clip
-        AudioClip.Destroy(recordedClip);
-        _audio.clip = newClip;
     }
+
+
     IEnumerator VoiceRec()
     {
         Microphone.End(Microphone.devices[0]);//재생중이던 마이크 정지
                                               //마이크 다시 녹음 시작
         _audio.clip = Microphone.Start(Microphone.devices[0], true, VoiceRecTime, 44100);
-   
+
         //if (Microphone.IsRecording(Microphone.devices[0]))
         //{
         //    VoiceRecTime += (int)Time.deltaTime;
@@ -114,6 +135,34 @@ public class MicrophoneSetting : MonoBehaviour
             ///마이크 녹음 길이 길게하고 소리가 일정 이하로 떨어지면 녹음처리
         }
     }
+    void ThirdWay(AudioSource audS, string deviceName)
+    {
+        //Capture the current clip data
+        AudioClip recordedClip = audS.clip;
+        var position = Microphone.GetPosition(Microphone.devices[0]);
+        var soundData = new float[recordedClip.samples * recordedClip.channels];
+        recordedClip.GetData(soundData, 0);
+
+        //Create shortened array for the data that was used for recording
+        var newData = new float[position * recordedClip.channels];
+
+        //Copy the used samples to a new array
+        for (int i = 0; i < newData.Length; i++)
+        {
+            newData[i] = soundData[i];
+        }
+
+        //One does not simply shorten an AudioClip,
+        //so we make a new one with the appropriate length
+
+        var newClip = AudioClip.Create(recordedClip.name, position, recordedClip.channels, recordedClip.frequency, false);
+        newClip.SetData(newData, 0); //Give it the data from the old clip
+        //Replace the old Clip
+        AudioClip.Destroy(recordedClip);
+        audS.clip = newClip;
+        SaveWaveFile();
+    }
+
     void SecondWay()
     {
         //사운드 측정
@@ -130,6 +179,7 @@ public class MicrophoneSetting : MonoBehaviour
             {
                 voiceIn = false;
                 saved = true;
+               
                 //true false true
             }
 
@@ -154,51 +204,6 @@ public class MicrophoneSetting : MonoBehaviour
             }
         }
     }
-    void SecondWay2()
-    {
-        //사운드 측정
-        loudness = GetAveragedVolume() * sensitivity;
-        if (rec)
-        {
-            //목소리 입력 시작
-            //소리 1이상일 시
-            if (loudness < 1)
-            {
-                voiceIn = false;
-                saved = true;
-            }
-            else if (loudness > 1)
-            {
-                voiceIn = true;
-            }
-            
-            //소리1이상
-            if (voiceIn)
-            {
-                StartCoroutine(VoiceRec());
-                if(loudness > 1)
-                {
-                    RecTime = 2;
-                }
-                voiceIn = false;
-            }
-
-            //소리 1이하
-            else if (saved && voiceIn == false)
-            {
-                RecTime -= Time.deltaTime;
-                if (RecTime < 0)
-                {
-                    ThirdWay(_audio, Microphone.devices[0].ToString());
-                    
-                    voiceIn = true;
-                    rec = false;
-                }
-                return;
-
-            }
-        }
-    }
     float GetAveragedVolume()//소리를 수치화
     {
         float[] data = new float[256];
@@ -208,7 +213,7 @@ public class MicrophoneSetting : MonoBehaviour
         {
             a += Mathf.Abs(s);//s의 절대값
         }
-        return a / 128;
+        return a / 256;
     }
 
     void SaveWaveFile()
@@ -237,18 +242,18 @@ public class MicrophoneSetting : MonoBehaviour
     //        Debug.Log("dddd");
     //    }
     //}
-    void ThirdWay(AudioSource audS, string deviceName)
+
+    void ThirdWay_Two()
     {
-        //Capture the current clip data
-        AudioClip recordedClip = audS.clip;
+        //Capturing the current clip data
+        AudioClip recordedClip = _audio.clip;
         var position = Microphone.GetPosition(Microphone.devices[0]);
         var soundData = new float[recordedClip.samples * recordedClip.channels];
         recordedClip.GetData(soundData, 0);
-
         //Create shortened array for the data that was used for recording
         var newData = new float[position * recordedClip.channels];
 
-        //Copy the used samples to a new array
+        //Microphone.End(null)
         for (int i = 0; i < newData.Length; i++)
         {
             newData[i] = soundData[i];
@@ -256,13 +261,12 @@ public class MicrophoneSetting : MonoBehaviour
 
         //One does not simply shorten an AudioClip,
         //so we make a new one with the appropriate length
-        
         var newClip = AudioClip.Create(recordedClip.name, position, recordedClip.channels, recordedClip.frequency, false);
-        newClip.SetData(newData, 0); //Give it the data from the old clip
-        //Replace the old Clip
-        AudioClip.Destroy(_audio.clip);
-        audS.clip = newClip;
-        SaveWaveFile();
+        newClip.SetData(newData, 0);//Give it the data from the old clip
+
+        //Replace the old clip
+        AudioClip.Destroy(recordedClip);
+        _audio.clip = newClip;
     }
 }
 
