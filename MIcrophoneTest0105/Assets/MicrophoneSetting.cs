@@ -33,7 +33,6 @@ public class MicrophoneSetting : MonoBehaviour
     }
     void Update()
     {
-        Debug.Log(RecTime);
 
         loudness = GetAveragedVolume() * sensitivity;
         //사운드 측정
@@ -77,7 +76,7 @@ public class MicrophoneSetting : MonoBehaviour
             else if (saved && voiceIn == false)
             {
                 RecTime -= Time.deltaTime;
-                ThirdWay(_audio, Microphone.devices[0].ToString());
+                ThirdWay(_audio, Microphone.devices[0]);
                 if (RecTime < 0)
                 {
                    

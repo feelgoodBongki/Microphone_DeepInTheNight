@@ -18,7 +18,7 @@ public class SwitchMicrophone : MonoBehaviour
     float loudness = 0;
     bool Rec;
     bool Saved;
-    public int VoiceRecTime = 2;
+    int VoiceRecTime = 2;
     float sensitivity = 100;
     void Start()
     {
@@ -26,13 +26,13 @@ public class SwitchMicrophone : MonoBehaviour
         Saved = true;
         _audio = GetComponent<AudioSource>();
         micState = MicState.IDLE;
+
     }
     void Update()
     {
-        Debug.Log(loudness);
         Debug.Log(micState);
         loudness = GetAveragedVolume() * sensitivity;
-
+        Debug.Log("1");
         if (!Rec)//rec == false
         {
             VoiceRecTime -= (int)Time.deltaTime;
@@ -41,10 +41,12 @@ public class SwitchMicrophone : MonoBehaviour
                 micState = MicState.DONE;
             }
         }
-        if(Saved==true)
+       else if (Saved == true)
         {
             SwitchState();
+            Debug.Log("2");
         }
+
 
     }
     void SwitchState()
@@ -53,7 +55,6 @@ public class SwitchMicrophone : MonoBehaviour
         {
             case MicState.IDLE:
                 IDLE();
-                micState = MicState.RECORD;
                 break;
             case MicState.RECORD:
                 RECORD();
@@ -68,14 +69,15 @@ public class SwitchMicrophone : MonoBehaviour
     }
     void IDLE()
     {
-       _audio.clip = Microphone.Start(Microphone.devices[0], true, 1, 44100);
-        //_audio.loop = true;
-        //while (!(Microphone.GetPosition(null) > 0)) { }
+        _audio.clip = Microphone.Start(Microphone.devices[0], true, 1, 44100);
+        _audio.loop = true;
+        while (!(Microphone.GetPosition(Microphone.devices[0]) > 0)) { }
         _audio.Play();
-        Debug.Log(micState);
         if (loudness > 1)
         {
             Microphone.End(Microphone.devices[0]);
+            micState = MicState.RECORD;
+
         }
     }
     void RECORD()
@@ -92,7 +94,7 @@ public class SwitchMicrophone : MonoBehaviour
         Microphone.End(Microphone.devices[0]);
         micState = MicState.SAVE;
     }
-    void SAVE() 
+    void SAVE()
     {
         SavWav.Save("Voice1", _audio.clip);
         Saved = false;
@@ -107,7 +109,7 @@ public class SwitchMicrophone : MonoBehaviour
         {
             a += Mathf.Abs(s);
         }
-        return a / 256;
+        return (float)(a / 256);
     }
 
 }

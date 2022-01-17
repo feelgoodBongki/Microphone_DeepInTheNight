@@ -140,7 +140,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!82 &11415814
 AudioSource:
   m_ObjectHideFlags: 0
@@ -249,7 +249,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79fdc2faf7d071048ace7e88a0d1826d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  VoiceRecTime: 2
 --- !u!4 &11415816
 Transform:
   m_ObjectHideFlags: 0
@@ -284,7 +283,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &299611481
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -299,7 +298,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Sphere: {fileID: 299611480}
   audioMixer: {fileID: 24300002, guid: f32a1bcdfee11f14e8e0bb2333b1a732, type: 2}
-  VoiceRecTime: 100
+  loudness: 0
   sensitivity: 100
 --- !u!82 &299611482
 AudioSource:
